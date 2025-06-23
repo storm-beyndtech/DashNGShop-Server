@@ -1,7 +1,7 @@
 // routes/users.ts
 import express from 'express'
 import { protect, restrictTo } from '../middleware/auth'
-import { deleteUserById, getAllUsers, getUserById, updateUserById } from '@/controllers/userController'
+import { deleteUserById, getAllUsers, getUserById, updateUserById } from '../controllers/userController'
 
 const router = express.Router()
 

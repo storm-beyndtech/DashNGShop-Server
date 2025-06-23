@@ -6,8 +6,8 @@ import {
 	updatePassword,
 } from "../controllers/authController";
 import { protect } from "../middleware/auth";
-import { clearWishlist, getMe, getWishlist, syncWishlist, toggleWishlist, updateAvatar, updateDetails, updatePreferences } from "@/controllers/userController";
-import { createAddress, deleteAddress, getAddresses, setDefaultAddress, updateAddress } from "@/controllers/addressController";
+import { clearWishlist, getMe, getWishlist, syncWishlist, toggleWishlist, updateAvatar, updateDetails, updatePreferences } from "../controllers/userController";
+import { createAddress, deleteAddress, getAddresses, setDefaultAddress, updateAddress } from "../controllers/addressController";
 
 const router = express.Router();
 
