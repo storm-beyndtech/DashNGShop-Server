@@ -10,7 +10,7 @@ const asyncHandler_1 = require("../utils/asyncHandler");
 const AppError_1 = require("../utils/AppError");
 const index_1 = require("../index");
 const crypto_1 = __importDefault(require("crypto"));
-const PaystackVerification_1 = require("@/utils/PaystackVerification");
+const PaystackVerification_1 = require("../utils/PaystackVerification");
 exports.getOrders = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     const orders = await Order_1.default.find();
     res.status(200).json(orders);

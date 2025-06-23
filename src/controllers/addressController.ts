@@ -1,6 +1,6 @@
-import User from '@/models/User';
-import { AppError } from '@/utils/AppError';
-import { asyncHandler } from '@/utils/asyncHandler';
+import User from '../models/User';
+import { AppError } from '../utils/AppError';
+import { asyncHandler } from '../utils/asyncHandler';
 import { Request, Response } from 'express';
 
 // @desc    Get user addresses

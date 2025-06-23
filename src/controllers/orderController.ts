@@ -6,7 +6,7 @@ import { asyncHandler } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
 import { io } from "../index";
 import crypto from 'crypto';
-import { verifyPaystackPayment } from "@/utils/PaystackVerification";
+import { verifyPaystackPayment } from "../utils/PaystackVerification";
 
 // @desc    Get all orders
 // @route   GET /api/orders

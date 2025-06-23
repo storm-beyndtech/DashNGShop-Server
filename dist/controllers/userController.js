@@ -4,8 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.searchUsers = exports.bulkUpdateUsers = exports.getUserStats = exports.deleteUserById = exports.updateUserById = exports.createUser = exports.getUserById = exports.getAllUsers = exports.syncWishlist = exports.clearWishlist = exports.toggleWishlist = exports.getWishlist = exports.updateAvatar = exports.deleteAccount = exports.updatePreferences = exports.changePassword = exports.updateDetails = exports.getMe = void 0;
-const AppError_1 = require("@/utils/AppError");
-const asyncHandler_1 = require("@/utils/asyncHandler");
+const AppError_1 = require("../utils/AppError");
+const asyncHandler_1 = require("../utils/asyncHandler");
 const User_1 = __importDefault(require("../models/User"));
 const Product_1 = __importDefault(require("../models/Product"));
 exports.getMe = (0, asyncHandler_1.asyncHandler)(async (req, res) => {

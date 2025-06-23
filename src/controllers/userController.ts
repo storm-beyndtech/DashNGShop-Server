@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { AppError } from "@/utils/AppError";
-import { asyncHandler } from "@/utils/asyncHandler";
+import { AppError } from "../utils/AppError";
+import { asyncHandler } from "../utils/asyncHandler";
 import User from "../models/User";
 import Product from "../models/Product";
 

@@ -4,9 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setDefaultAddress = exports.deleteAddress = exports.updateAddress = exports.createAddress = exports.getAddresses = void 0;
-const User_1 = __importDefault(require("@/models/User"));
-const AppError_1 = require("@/utils/AppError");
-const asyncHandler_1 = require("@/utils/asyncHandler");
+const User_1 = __importDefault(require("../models/User"));
+const AppError_1 = require("../utils/AppError");
+const asyncHandler_1 = require("../utils/asyncHandler");
 exports.getAddresses = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     console.log(req.user);
     const user = await User_1.default.findById(req.user?.id).select('addresses');
