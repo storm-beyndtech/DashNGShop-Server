@@ -105,4 +105,5 @@ process.on("SIGINT", () => {
     });
 });
 startServer();
+exports.default = app;
 //# sourceMappingURL=index.js.map
