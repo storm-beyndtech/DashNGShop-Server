@@ -23,13 +23,12 @@ const upload_1 = __importDefault(require("./routes/upload"));
 const socket_1 = require("./utils/socket");
 const app = (0, express_1.default)();
 const server = (0, http_1.createServer)(app);
-const io = new socket_io_1.Server(server, {
+exports.io = new socket_io_1.Server(server, {
     cors: {
         origin: process.env.CLIENT_URL || "http://localhost:3000",
         methods: ["GET", "POST"],
     },
 });
-exports.io = io;
 const PORT = process.env.PORT || 3000;
 app.use((0, helmet_1.default)({
     crossOriginEmbedderPolicy: false,
@@ -70,7 +69,7 @@ app.use("/api/products", products_1.default);
 app.use("/api/orders", orders_1.default);
 app.use("/api/users", users_1.default);
 app.use("/api/upload", upload_1.default);
-(0, socket_1.initSocket)(io);
+(0, socket_1.initSocket)(exports.io);
 app.use("*", (req, res) => {
     res.status(404).json({
         success: false,

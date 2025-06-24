@@ -20,7 +20,7 @@ import { initSocket } from "./utils/socket";
 
 const app = express();
 const server = createServer(app);
-const io = new Server(server, {
+export const io = new Server(server, {
 	cors: {
 		origin: process.env.CLIENT_URL || "http://localhost:3000",
 		methods: ["GET", "POST"],
@@ -134,5 +134,3 @@ process.on("SIGINT", () => {
 });
 
 startServer();
-
-export { io };
