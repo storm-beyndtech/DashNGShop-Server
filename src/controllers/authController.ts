@@ -3,6 +3,7 @@ import * as jwt from "jsonwebtoken";
 import User, { IUser } from "../models/User";
 import { asyncHandler } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
+import { loginAlertMail, welcomeMail } from "@/services/emailService";
 
 // Helper function to generate JWT token
 const generateToken = (userId: string) => {
@@ -75,7 +76,8 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 
 	// Update last login
 	user.lastLogin = new Date();
-	await user.save();
+  await user.save();
+  await welcomeMail(user.email);
 
 	sendTokenResponse(user, 201, res);
 });
@@ -111,7 +113,8 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
 	// Update last login
 	user.lastLogin = new Date();
-	await user.save();
+  await user.save();
+  await loginAlertMail(user.email);
 
 	sendTokenResponse(user, 200, res);
 });
