@@ -16,7 +16,7 @@ import productRoutes from "./routes/products";
 import orderRoutes from "./routes/orders";
 import userRoutes from "./routes/users";
 import uploadRoutes from "./routes/upload";
-// import { initSocket } from "./utils/socket";
+import { initSocket } from "./utils/socket";
 
 const app = express();
 const server = createServer(app);
@@ -88,7 +88,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/upload", uploadRoutes);
 
 // Socket.IO for real-time features
-// initSocket(io);
+initSocket(io);
 
 // 404 handler
 app.use("*", (req, res) => {

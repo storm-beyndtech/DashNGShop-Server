@@ -118,7 +118,7 @@ export async function orderPlacedMail(userEmail: string, orderDetails: any) {
     `;
 
 		let mailOptions = {
-			from: `DashNGShop <orders@DashNGShop.com>`,
+			from: `DashNGShop`,
 			to: userEmail,
 			subject: `Order Confirmed - #${orderId}`,
 			html: emailTemplate(bodyContent),
@@ -145,9 +145,9 @@ export async function orderConfirmationMail(userEmail: string, orderDetails: any
     `;
 
 		let mailOptions = {
-			from: `DashNGShop <orders@DashNGShop.com>`,
+			from: `DashNGShop`,
 			to: userEmail,
-			subject: `Payment Confirmed - Order #${orderId}`,
+			subject: `Payment Confirmed - Order ID: ${orderId}`,
 			html: emailTemplate(bodyContent),
 		};
 
@@ -203,32 +203,6 @@ export async function lowProductAlert(productDetails: any) {
 			from: `DashNGShop System <system@DashNGShop.com>`,
 			to: "admin@DashNGShop.com",
 			subject: `Low Stock: ${productName}`,
-			html: emailTemplate(bodyContent),
-		};
-
-		return await sendMailWithRetry(mailOptions);
-	} catch (error) {
-		return { error: error instanceof Error && error.message };
-	}
-}
-
-// General Alert Mail
-export async function alertMail(userEmail: string, alertDetails: any) {
-	const { title, message } = alertDetails;
-	
-	try {
-		let bodyContent = `
-      <td style="padding: 20px; line-height: 1.8;">
-        <h3 style="color: #114000;">${title}</h3>
-        <p>${message}</p>
-        <p>Best regards,<br />The DashNGShop Team</p>
-      </td>
-    `;
-
-		let mailOptions = {
-			from: `DashNGShop <alerts@DashNGShop.com>`,
-			to: userEmail,
-			subject: title,
 			html: emailTemplate(bodyContent),
 		};
 

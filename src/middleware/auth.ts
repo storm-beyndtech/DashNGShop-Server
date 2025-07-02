@@ -29,7 +29,6 @@ export const protect = asyncHandler(async (req: Request, res: Response, next: Ne
 	// 1) Getting token and check if it's there
 	let token;
 
-	console.log(req.headers.authorization);
 	if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
 		token = req.headers.authorization.split(" ")[1];
 	} else if (req.cookies?.token) {

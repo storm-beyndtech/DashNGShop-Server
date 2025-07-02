@@ -5,7 +5,7 @@ import Product from "../models/Product";
 import { asyncHandler } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
 import { io } from "../index";
-import crypto from 'crypto';
+import crypto from "crypto";
 import { verifyPaystackPayment } from "../utils/PaystackVerification";
 
 // @desc    Get all orders
@@ -23,8 +23,8 @@ export const getOrders = asyncHandler(async (req: Request, res: Response) => {
 export const getMyOrders = asyncHandler(async (req: Request, res: Response) => {
 	const orders = await Order.find({ user: req.user?.id })
 		.populate("items.product", "name images")
-    .sort({ createdAt: -1 });
-  
+		.sort({ createdAt: -1 });
+
 	res.status(200).json(orders);
 });
 
@@ -50,7 +50,6 @@ export const getOrder = asyncHandler(async (req: Request, res: Response) => {
 	res.status(200).json(order);
 });
 
-
 // @desc    Verify Paystack payment
 // @route   POST /api/orders/verify-payment
 // @access  Private
@@ -63,7 +62,7 @@ export const verifyPayment = asyncHandler(async (req: Request, res: Response) =>
 
 	try {
 		const verification = await verifyPaystackPayment(reference);
-		
+
 		if (!verification.success) {
 			throw new AppError("Payment verification failed", 400);
 		}
@@ -75,22 +74,20 @@ export const verifyPayment = asyncHandler(async (req: Request, res: Response) =>
 		}
 
 		// Check if payment status is successful
-		if (verification.data.status !== 'success') {
+		if (verification.data.status !== "success") {
 			throw new AppError("Payment was not successful", 400);
 		}
 
 		res.json({
 			verified: true,
 			data: verification.data,
-			message: "Payment verified successfully"
+			message: "Payment verified successfully",
 		});
-
 	} catch (error) {
-		console.error('Payment verification error:', error);
+		console.error("Payment verification error:", error);
 		throw new AppError("Payment verification failed", 400);
 	}
 });
-
 
 // @desc    Create order
 // @route   POST /api/orders
@@ -104,10 +101,10 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
 
 	// For Paystack payments, we assume verification was done before this call
 	// But we can still do a quick verification as a safety measure
-	if (paymentMethod === 'paystack' && paymentDetails?.reference) {
+	if (paymentMethod === "paystack" && paymentDetails?.reference) {
 		try {
 			const verification = await verifyPaystackPayment(paymentDetails.reference);
-			if (!verification.success || verification.data.status !== 'success') {
+			if (!verification.success || verification.data.status !== "success") {
 				throw new AppError("Invalid payment reference", 400);
 			}
 		} catch (error) {
@@ -149,6 +146,8 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
 			product.inStock = false;
 		}
 		await product.save();
+
+		io.emit("inventory-updated", product); // Emit inventory update
 	}
 
 	// Calculate shipping and tax
@@ -157,7 +156,7 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
 	const total = subtotal + shipping + tax;
 
 	// Generate order number
-	const orderNumber = `ORD-${Date.now()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+	const orderNumber = `ORD-${Date.now()}-${crypto.randomBytes(3).toString("hex").toUpperCase()}`;
 
 	const order = await Order.create({
 		orderNumber,
@@ -171,12 +170,12 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
 		billingAddress: billingAddress || shippingAddress,
 		paymentMethod,
 		paymentDetails,
-		status: paymentMethod === 'paystack' ? 'confirmed' : 'pending',
-		paymentStatus: paymentMethod === 'paystack' ? 'paid' : 'pending',
+		status: paymentMethod === "paystack" ? "confirmed" : "pending",
+		paymentStatus: paymentMethod === "paystack" ? "paid" : "pending",
 	});
 
 	// Populate the order with product details
-	await order.populate('items.product');
+	await order.populate("items.product");
 
 	// Emit real-time update
 	io.emit("order-created", {
@@ -188,7 +187,6 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
 
 	res.status(201).json(order);
 });
-
 
 // @desc    Update order status
 // @route   PATCH /api/orders/:id/status
@@ -216,7 +214,7 @@ export const updateOrderStatus = asyncHandler(async (req: Request, res: Response
 	// Emit real-time update
 	io.emit("order-updated", {
 		orderId: order._id,
-		status: order.status
+		status: order.status,
 	});
 
 	res.status(200).json(order);

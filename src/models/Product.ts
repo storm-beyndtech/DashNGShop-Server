@@ -1,4 +1,3 @@
-// models/Product.ts
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IProduct extends Document {
@@ -56,13 +55,8 @@ const ProductSchema = new Schema<IProduct>(
 		},
 		originalPrice: {
 			type: Number,
-			min: [0, "Original price cannot be negative"],
-			validate: {
-				validator: function (this: IProduct, value: number) {
-					return !value || value >= this.price;
-				},
-				message: "Original price must be greater than or equal to current price",
-			},
+			min: [0, "Price cannot be negative"],
+			index: true,
 		},
 		images: [
 			{

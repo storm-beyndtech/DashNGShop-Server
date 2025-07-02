@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import Product from "../models/Product";
 import { asyncHandler } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
+import { io } from "../index";
 
 // @desc    Get all products
 // @route   GET /api/products
@@ -42,6 +43,8 @@ export const getAdminProducts = asyncHandler(async (req: Request, res: Response)
 export const createProduct = asyncHandler(async (req: Request, res: Response) => {
 	const product = await Product.create(req.body);
 
+	// Emit real-time update
+	io.emit("product-created", product);
 	res.status(201).json(product);
 });
 
