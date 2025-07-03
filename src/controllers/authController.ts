@@ -4,6 +4,7 @@ import User, { IUser } from "../models/User";
 import { asyncHandler } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
 import { loginAlertMail, welcomeMail } from "@/services/emailService";
+import { LoginHistory } from "@/models/LoginHistory";
 
 // Helper function to generate JWT token
 const generateToken = (userId: string) => {
@@ -36,19 +37,19 @@ const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
 			success: true,
 			token,
 			user: {
-			id: user._id,
-			firstName: user.firstName,
-			lastName: user.lastName,
-			username: user.username,
-			email: user.email,
-			role: user.role,
-			avatar: user.avatar,
-			phone: user.phone,
-			addresses: user.addresses,
-			preferences: user.preferences,
-			wishlist: user.wishlist,
-			lastLogin: user.lastLogin,
-			createdAt: user.createdAt,
+				id: user._id,
+				firstName: user.firstName,
+				lastName: user.lastName,
+				username: user.username,
+				email: user.email,
+				role: user.role,
+				avatar: user.avatar,
+				phone: user.phone,
+				addresses: user.addresses,
+				preferences: user.preferences,
+				wishlist: user.wishlist,
+				lastLogin: user.lastLogin,
+				createdAt: user.createdAt,
 			},
 		});
 };
@@ -76,8 +77,8 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 
 	// Update last login
 	user.lastLogin = new Date();
-  await user.save();
-  await welcomeMail(user.email);
+	await user.save();
+	await welcomeMail(user.email);
 
 	sendTokenResponse(user, 201, res);
 });
@@ -107,16 +108,42 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
 	// Check if password matches
 	const isMatch = await user.comparePassword(password);
+
 	if (!isMatch) {
 		throw new AppError("Invalid credentials", 401);
 	}
 
 	// Update last login
 	user.lastLogin = new Date();
-  await user.save();
-  await loginAlertMail(user.email);
+	await user.save();
+	await loginAlertMail(user.email, req.ip || (req.headers["x-forwarded-for"] as string));
 
 	sendTokenResponse(user, 200, res);
+
+	// 1. Create the entry quickly without location
+	const loginEntry = new LoginHistory({
+		userId: user._id,
+		ipAddress: req.ip,
+		userAgent: req.headers["user-agent"] || "Unknown",
+		success: isMatch,
+		method: "password",
+	});
+	await loginEntry.save();
+
+	// 2. Fetch geo AFTER login is complete (non-blocking)
+	fetch(`https://ipapi.co/${req.ip}/json/`)
+		.then((res) => res.json())
+		.then((data: any) => {
+			loginEntry.location = {
+				city: data.city || "Unknown",
+				region: data.region || "Unknown",
+				country: data.country_name || "Unknown",
+			};
+			return loginEntry.save(); // update location later
+		})
+		.catch((err) => {
+			console.error("Geo fetch failed:", err);
+		});
 });
 
 // @desc    Update password

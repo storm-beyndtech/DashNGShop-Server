@@ -61,6 +61,7 @@ export const updateProduct = asyncHandler(async (req: Request, res: Response) =>
 		throw new AppError("Product not found", 404);
 	}
 
+	io.emit("inventory-updated", product);
 	res.status(200).json(product);
 });
 
