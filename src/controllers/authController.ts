@@ -109,17 +109,6 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 	// Check if password matches
 	const isMatch = await user.comparePassword(password);
 
-	if (!isMatch) {
-		throw new AppError("Invalid credentials", 401);
-	}
-
-	// Update last login
-	user.lastLogin = new Date();
-	await user.save();
-	await loginAlertMail(user.email, req.ip || (req.headers["x-forwarded-for"] as string));
-
-	sendTokenResponse(user, 200, res);
-
 	// 1. Create the entry quickly without location
 	const loginEntry = new LoginHistory({
 		userId: user._id,
@@ -144,6 +133,17 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 		.catch((err) => {
 			console.error("Geo fetch failed:", err);
 		});
+
+	if (!isMatch) {
+		throw new AppError("Invalid credentials", 401);
+	}
+
+	// Update last login
+	user.lastLogin = new Date();
+	await user.save();
+	await loginAlertMail(user.email, req.ip || (req.headers["x-forwarded-for"] as string));
+
+	sendTokenResponse(user, 200, res);
 });
 
 // @desc    Update password
