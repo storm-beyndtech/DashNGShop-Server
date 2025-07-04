@@ -17,6 +17,10 @@ import orderRoutes from "./routes/orders";
 import userRoutes from "./routes/users";
 import uploadRoutes from "./routes/upload";
 import { initSocket } from "./utils/socket";
+import { verifyTransporter } from "./config/email";
+import { testRedisConnection } from "./utils/testRedis";
+import { WorkerManager } from "./workers";
+import { emailQueue, geoQueue } from "./queues";
 
 const app = express();
 const server = createServer(app);
@@ -71,15 +75,6 @@ app.use(compression());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-// Health check endpoint
-app.get("/health", (req, res) => {
-	res.status(200).json({
-		status: "OK",
-		timestamp: new Date().toISOString(),
-		environment: process.env.NODE_ENV || "development",
-	});
-});
-
 // API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
@@ -101,11 +96,44 @@ app.use("*", (req, res) => {
 // Global error handler
 app.use(errorHandler);
 
+// Health check endpoint
+app.get("/health", (req, res) => {
+	res.status(200).json({
+		status: "OK",
+		timestamp: new Date().toISOString(),
+		environment: process.env.NODE_ENV || "development",
+	});
+});
+
+// Queue status
+app.get("/health/queues", async (req, res) => {
+	try {
+		const geoStats = await geoQueue.getJobCounts();
+		const emailStats = await emailQueue.getJobCounts();
+
+		res.json({
+			success: true,
+			data: { geoLocation: geoStats, email: emailStats },
+		});
+	} catch (error: any) {
+		res.status(500).json({ success: false, error: error.message });
+	}
+});
+
 // Database connection and server startup
 const startServer = async () => {
 	try {
 		await connectDatabase();
+		await verifyTransporter();
 		console.log("✅ Database connected successfully");
+
+		// Test Redis
+		const redisOk = await testRedisConnection();
+		if (!redisOk) throw new Error("Redis connection failed");
+		console.log("✅ Redis connected");
+
+		// Start workers
+		new WorkerManager();
 
 		server.listen(PORT, () => {
 			console.log(`🚀 Server running on port ${PORT}`);
@@ -134,4 +162,4 @@ process.on("SIGINT", () => {
 });
 
 startServer();
-export default app; 
+export default app;

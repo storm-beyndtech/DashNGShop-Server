@@ -1,4 +1,4 @@
-import { transporter } from "@/utils/emailConfig";
+import { transporter } from "@/config/email";
 import { emailTemplate } from "@/utils/emailTemplate";
 
 const sendMail = (mailData: any) => {
@@ -38,7 +38,7 @@ export async function welcomeMail(userEmail: string) {
     `;
 
 		let mailOptions = {
-			from: `DashNGShop <support@DashNGShop.com>`,
+			from: `DashNGShop`,
 			to: userEmail,
 			subject: "Welcome to DashNGShop!",
 			html: emailTemplate(bodyContent),
@@ -64,7 +64,7 @@ export async function passwordResetMail(userEmail: string, resetToken: string) {
     `;
 
 		let mailOptions = {
-			from: `DashNGShop <support@DashNGShop.com>`,
+			from: `DashNGShop`,
 			to: userEmail,
 			subject: "Password Reset Request",
 			html: emailTemplate(bodyContent),
@@ -90,7 +90,7 @@ export async function verificationCodeMail(userEmail: string, verificationCode: 
     `;
 
 		let mailOptions = {
-			from: `DashNGShop <support@DashNGShop.com>`,
+			from: `DashNGShop`,
 			to: userEmail,
 			subject: "Your DashNGShop Verification Code",
 			html: emailTemplate(bodyContent),
@@ -172,7 +172,7 @@ export async function newProductMail(userEmail: string, productDetails: any) {
     `;
 
 		let mailOptions = {
-			from: `DashNGShop <products@DashNGShop.com>`,
+			from: `DashNGShop`,
 			to: userEmail,
 			subject: `New Product: ${productName}`,
 			html: emailTemplate(bodyContent),
@@ -200,8 +200,8 @@ export async function lowProductAlert(productDetails: any) {
     `;
 
 		let mailOptions = {
-			from: `DashNGShop System <system@DashNGShop.com>`,
-			to: "admin@DashNGShop.com",
+			from: `DashNGShop System`,
+			to: "beyndtech@gmail.com",
 			subject: `Low Stock: ${productName}`,
 			html: emailTemplate(bodyContent),
 		};
@@ -225,8 +225,8 @@ export async function adminTransactionAlert(userEmail: string, amount: number, c
     `;
 
 		let mailOptions = {
-			from: `DashNGShop <support@DashNGShop.com>`,
-			to: "support@DashNGShop.com",
+			from: `DashNGShop`,
+			to: "beyndtech@gmail.com",
 			subject: "Transaction Approval Required",
 			html: emailTemplate(bodyContent),
 		};
@@ -256,7 +256,7 @@ export async function transactionStatusMail(
   `;
 
 		let mailOptions = {
-			from: `DashNGShop <support@DashNGShop.com>`,
+			from: `DashNGShop`,
 			to: userEmail,
 			subject: `${type} ${status}`,
 			html: emailTemplate(bodyContent),
@@ -274,7 +274,7 @@ export async function adminMail(recipients: string | string[], subject: string, 
 		const recipientList = Array.isArray(recipients) ? recipients : [recipients];
 
 		let mailOptions = {
-			from: `DashNGShop Admin <admin@DashNGShop.com>`,
+			from: `DashNGShop Admin`,
 			to: recipientList.join(","),
 			subject,
 			html: emailTemplate(bodyContent),
@@ -311,7 +311,7 @@ export async function loginAlertMail(userEmail: string, ipAddress?: string) {
   `;
 
 		const mailOptions = {
-			from: `DashNGShop <security@DashNGShop.com>`,
+			from: `DashNGShop`,
 			to: userEmail,
 			subject: `Login Alert - DashNGShop`,
 			html: emailTemplate(bodyContent),

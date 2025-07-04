@@ -5,6 +5,7 @@ import { asyncHandler } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
 import { loginAlertMail, welcomeMail } from "@/services/emailService";
 import { LoginHistory } from "@/models/LoginHistory";
+import { addEmailJob, addGeoJob } from "@/queues";
 
 // Helper function to generate JWT token
 const generateToken = (userId: string) => {
@@ -87,63 +88,55 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 // @route   POST /api/auth/login
 // @access  Public
 export const login = asyncHandler(async (req: Request, res: Response) => {
-	const { email, password } = req.body;
+  const { email, password } = req.body;
 
-	// Validate input
-	if (!email || !password) {
-		throw new AppError("Please provide email and password", 400);
-	}
+  if (!email || !password) {
+    throw new AppError("Please provide email and password", 400);
+  }
 
-	// Check for user and include password
-	const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
+  const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
 
-	if (!user) {
-		throw new AppError("Invalid credentials", 401);
-	}
+  if (!user || !user.isActive) {
+    throw new AppError("Invalid credentials", 401);
+  }
 
-	// Check if user is active
-	if (!user.isActive) {
-		throw new AppError("Account has been deactivated", 401);
-	}
+  const isMatch = await user.comparePassword(password);
 
-	// Check if password matches
-	const isMatch = await user.comparePassword(password);
+  // Create login entry immediately
+  const loginEntry = new LoginHistory({
+    userId: user._id,
+    ipAddress: req.ip,
+    userAgent: req.headers["user-agent"] || "Unknown",
+    success: isMatch,
+    method: "password",
+  });
+  await loginEntry.save();
 
-	// 1. Create the entry quickly without location
-	const loginEntry = new LoginHistory({
-		userId: user._id,
-		ipAddress: req.ip,
-		userAgent: req.headers["user-agent"] || "Unknown",
-		success: isMatch,
-		method: "password",
-	});
-	await loginEntry.save();
+  // Queue background jobs (don't wait)
+  if (isMatch) {
+    // Queue geo location job
+    addGeoJob({
+      loginEntryId: loginEntry.id.toString(),
+      ipAddress: req.ip || 'unknown',
+      userId: user._id.toString(),
+    }).catch(err => console.error('Failed to queue geo job:', err));
 
-	// 2. Fetch geo AFTER login is complete (non-blocking)
-	fetch(`https://ipapi.co/${req.ip}/json/`)
-		.then((res) => res.json())
-		.then((data: any) => {
-			loginEntry.location = {
-				city: data.city || "Unknown",
-				region: data.region || "Unknown",
-				country: data.country_name || "Unknown",
-			};
-			return loginEntry.save(); // update location later
-		})
-		.catch((err) => {
-			console.error("Geo fetch failed:", err);
-		});
+    // Queue login alert email
+    addEmailJob({
+      email: user.email,
+      ipAddress: req.ip || 'unknown',
+    }).catch(err => console.error('Failed to queue email job:', err));
+  }
 
-	if (!isMatch) {
-		throw new AppError("Invalid credentials", 401);
-	}
+  if (!isMatch) {
+    throw new AppError("Invalid credentials", 401);
+  }
 
-	// Update last login
-	user.lastLogin = new Date();
-	await user.save();
-	await loginAlertMail(user.email, req.ip || (req.headers["x-forwarded-for"] as string));
+  // Update user
+  user.lastLogin = new Date();
+  await user.save();
 
-	sendTokenResponse(user, 200, res);
+  sendTokenResponse(user, 200, res);
 });
 
 // @desc    Update password
