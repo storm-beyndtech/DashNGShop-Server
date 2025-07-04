@@ -222,14 +222,6 @@ const OrderSchema = new Schema<IOrder>(
 //Index
 OrderSchema.index({ createdAt: -1 });
 
-// Generate order number before saving
-OrderSchema.pre("save", async function (this: IOrder) {
-	if (this.isNew) {
-		const count = await mongoose.model("Order").countDocuments();
-		this.orderNumber = `ORD-${String(count + 1).padStart(6, "0")}`;
-	}
-});
-
 const Order = mongoose.model<IOrder>("Order", OrderSchema);
 
 export default Order;

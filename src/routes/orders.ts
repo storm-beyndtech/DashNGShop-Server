@@ -8,6 +8,7 @@ import {
 	updateOrderStatus,
 	cancelOrder,
 	verifyPayment,
+  updateOrder,
 } from "../controllers/orderController";
 import { protect, restrictTo } from "../middleware/auth";
 
@@ -26,6 +27,7 @@ router.patch("/:id/cancel", cancelOrder);
 
 // Admin/Staff routes
 router.get("/", restrictTo("admin", "storekeeper", "salesperson"), getOrders);
+router.patch("/:id", restrictTo("admin", "storekeeper", "salesperson"), updateOrder);
 router.patch("/:id/status", restrictTo("admin", "storekeeper", "salesperson"), updateOrderStatus);
 
 export default router;

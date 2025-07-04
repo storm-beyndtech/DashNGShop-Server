@@ -178,14 +178,58 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
 	await order.populate("items.product");
 
 	// Emit real-time update
-	io.emit("order-created", {
-		orderId: order._id,
-		orderNumber: order.orderNumber,
-		total: order.total,
-		status: order.status,
-	});
+	io.emit("order-created", order);
 
 	res.status(201).json(order);
+});
+
+
+// Add this to your orderController.ts
+// @desc    Update order
+// @route   PATCH /api/orders/:id
+// @access  Private (Admin/Staff)
+export const updateOrder = asyncHandler(async (req: Request, res: Response) => {
+	const { status, paymentStatus, trackingNumber, estimatedDelivery, notes } = req.body;
+
+	// Check if order exists
+	const existingOrder = await Order.findById(req.params.id);
+	if (!existingOrder) {
+		throw new AppError("Order not found", 404);
+	}
+
+	// Build update object
+	const updateData: any = {};
+
+	if (status !== undefined) updateData.status = status;
+	if (paymentStatus !== undefined) updateData.paymentStatus = paymentStatus;
+	if (trackingNumber !== undefined) updateData.trackingNumber = trackingNumber?.trim() || null;
+	if (estimatedDelivery !== undefined) updateData.estimatedDelivery = estimatedDelivery ? new Date(estimatedDelivery) : null;
+	if (notes !== undefined) updateData.notes = notes?.trim() || null;
+
+	// Auto-set deliveredAt when status becomes delivered
+	if (status === "delivered") {
+		updateData.deliveredAt = new Date();
+	}
+
+	// Require tracking number for shipped orders
+	if (status === "shipped") {
+		const finalTrackingNumber = trackingNumber || existingOrder.trackingNumber;
+		if (!finalTrackingNumber?.trim()) {
+			throw new AppError("Tracking number is required when status is set to shipped", 400);
+		}
+	}
+
+	const order = await Order.findByIdAndUpdate(
+		req.params.id,
+		updateData,
+		{ new: true, runValidators: true }
+	).populate("user", "firstName lastName email")
+	 .populate("items.product", "name images");
+
+	// Emit real-time update
+	io.emit("order-updated", order);
+
+	res.status(200).json(order);
 });
 
 // @desc    Update order status

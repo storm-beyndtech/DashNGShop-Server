@@ -5,7 +5,6 @@ import { asyncHandler } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
 import { loginAlertMail, welcomeMail } from "@/services/emailService";
 import { LoginHistory } from "@/models/LoginHistory";
-import { addEmailJob, addGeoJob } from "@/queues";
 
 // Helper function to generate JWT token
 const generateToken = (userId: string) => {
@@ -38,19 +37,19 @@ const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
 			success: true,
 			token,
 			user: {
-				id: user._id,
-				firstName: user.firstName,
-				lastName: user.lastName,
-				username: user.username,
-				email: user.email,
-				role: user.role,
-				avatar: user.avatar,
-				phone: user.phone,
-				addresses: user.addresses,
-				preferences: user.preferences,
-				wishlist: user.wishlist,
-				lastLogin: user.lastLogin,
-				createdAt: user.createdAt,
+			id: user._id,
+			firstName: user.firstName,
+			lastName: user.lastName,
+			username: user.username,
+			email: user.email,
+			role: user.role,
+			avatar: user.avatar,
+			phone: user.phone,
+			addresses: user.addresses,
+			preferences: user.preferences,
+			wishlist: user.wishlist,
+			lastLogin: user.lastLogin,
+			createdAt: user.createdAt,
 			},
 		});
 };
@@ -78,8 +77,8 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 
 	// Update last login
 	user.lastLogin = new Date();
-	await user.save();
-	await welcomeMail(user.email);
+  await user.save();
+  await welcomeMail(user.email);
 
 	sendTokenResponse(user, 201, res);
 });
@@ -88,55 +87,47 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 // @route   POST /api/auth/login
 // @access  Public
 export const login = asyncHandler(async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+	const { email, password } = req.body;
 
-  if (!email || !password) {
-    throw new AppError("Please provide email and password", 400);
-  }
+	// Validate input
+	if (!email || !password) {
+		throw new AppError("Please provide email and password", 400);
+	}
 
-  const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
+	// Check for user and include password
+	const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
 
-  if (!user || !user.isActive) {
-    throw new AppError("Invalid credentials", 401);
-  }
+	if (!user) {
+		throw new AppError("Invalid credentials", 401);
+	}
 
+	// Check if user is active
+	if (!user.isActive) {
+		throw new AppError("Account has been deactivated", 401);
+	}
+
+	// Check if password matches
   const isMatch = await user.comparePassword(password);
-
-  // Create login entry immediately
+  
   const loginEntry = new LoginHistory({
-    userId: user._id,
-    ipAddress: req.ip,
-    userAgent: req.headers["user-agent"] || "Unknown",
+    userId: user?._id,
+    ipAddress: req.ip || req.headers['x-forwarded-for'],
+    userAgent: req.headers['user-agent'],
     success: isMatch,
-    method: "password",
   });
+
   await loginEntry.save();
 
-  // Queue background jobs (don't wait)
-  if (isMatch) {
-    // Queue geo location job
-    addGeoJob({
-      loginEntryId: loginEntry.id.toString(),
-      ipAddress: req.ip || 'unknown',
-      userId: user._id.toString(),
-    }).catch(err => console.error('Failed to queue geo job:', err));
+	if (!isMatch) {
+		throw new AppError("Invalid credentials", 401);
+	}
 
-    // Queue login alert email
-    addEmailJob({
-      email: user.email,
-      ipAddress: req.ip || 'unknown',
-    }).catch(err => console.error('Failed to queue email job:', err));
-  }
-
-  if (!isMatch) {
-    throw new AppError("Invalid credentials", 401);
-  }
-
-  // Update user
-  user.lastLogin = new Date();
+	// Update last login
+	user.lastLogin = new Date();
   await user.save();
+  await loginAlertMail(user.email, req.ip || req.headers['x-forwarded-for'] as string);
 
-  sendTokenResponse(user, 200, res);
+	sendTokenResponse(user, 200, res);
 });
 
 // @desc    Update password
