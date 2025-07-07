@@ -31,16 +31,16 @@ export async function welcomeMail(userEmail: string) {
 	try {
 		let bodyContent = `
       <td style="padding: 20px; line-height: 1.8;">
-        <p>Welcome to DashNGShop!</p>
-        <p>We're thrilled to have you as part of our community. At DashNGShop, we are dedicated to providing seamless services and support to our users.</p>
-        <p>Best regards,<br />The DashNGShop Team</p>
+        <p>Welcome to Dash!</p>
+        <p>We're thrilled to have you as part of our community. At Dash, we are dedicated to providing seamless services and support to our users.</p>
+        <p>Best regards,<br />The Dash Team</p>
       </td>
     `;
 
 		let mailOptions = {
-			from: `DashNGShop`,
+			from: `Dash`,
 			to: userEmail,
-			subject: "Welcome to DashNGShop!",
+			subject: "Welcome to Dash!",
 			html: emailTemplate(bodyContent),
 		};
 
@@ -52,19 +52,19 @@ export async function welcomeMail(userEmail: string) {
 
 // Password Reset Mail
 export async function passwordResetMail(userEmail: string, resetToken: string) {
-	const resetLink = `https://DashNGShop.com/reset-password/${resetToken}`;
+	const resetLink = `https://dashngshop.com/reset-password/${resetToken}`;
 	try {
 		let bodyContent = `
       <td style="padding: 20px; line-height: 1.8;">
         <p>A request was sent for a password reset. If this wasn't you, please contact our customer service.</p>
         <p>Click the reset link below to proceed:</p>
         <a href="${resetLink}" style="display: inline-block; padding: 15px 30px; border-radius: 30px; background-color: #114000; color: #fafafa; text-decoration: none;">Reset Password</a>
-        <p>Best regards,<br />The DashNGShop Team</p>
+        <p>Best regards,<br />The Dash Team</p>
       </td>
     `;
 
 		let mailOptions = {
-			from: `DashNGShop`,
+			from: `Dash`,
 			to: userEmail,
 			subject: "Password Reset Request",
 			html: emailTemplate(bodyContent),
@@ -85,14 +85,14 @@ export async function verificationCodeMail(userEmail: string, verificationCode: 
         <h2 style="text-align: center; font-size: 24px;">${verificationCode}</h2>
         <p>This code will expire in 10 minutes.</p>
         <p>If you didn't request this, please ignore this email.</p>
-        <p>Best regards,<br />The DashNGShop Team</p>
+        <p>Best regards,<br />The Dash Team</p>
       </td>
     `;
 
 		let mailOptions = {
-			from: `DashNGShop`,
+			from: `Dash`,
 			to: userEmail,
-			subject: "Your DashNGShop Verification Code",
+			subject: "Your Dash Verification Code",
 			html: emailTemplate(bodyContent),
 		};
 
@@ -113,12 +113,12 @@ export async function orderPlacedMail(userEmail: string, orderDetails: any) {
         <p>Your order <strong>#${orderId}</strong> has been successfully placed and is being processed.</p>
         <p><strong>Total: ${totalAmount} ${currency}</strong></p>
         <p>We'll send you an update once your order ships.</p>
-        <p>Best regards,<br />The DashNGShop Team</p>
+        <p>Best regards,<br />The Dash Team</p>
       </td>
     `;
 
 		let mailOptions = {
-			from: `DashNGShop`,
+			from: `Dash`,
 			to: userEmail,
 			subject: `Order Confirmed - #${orderId}`,
 			html: emailTemplate(bodyContent),
@@ -140,12 +140,12 @@ export async function orderConfirmationMail(userEmail: string, orderDetails: any
         <p>Payment confirmed for order <strong>#${orderId}</strong>!</p>
         <p><strong>Payment Method:</strong> ${paymentMethod}</p>
         <p>Your order is now being prepared for shipment.</p>
-        <p>Best regards,<br />The DashNGShop Team</p>
+        <p>Best regards,<br />The Dash Team</p>
       </td>
     `;
 
 		let mailOptions = {
-			from: `DashNGShop`,
+			from: `Dash`,
 			to: userEmail,
 			subject: `Payment Confirmed - Order ID: ${orderId}`,
 			html: emailTemplate(bodyContent),
@@ -167,12 +167,12 @@ export async function newProductMail(userEmail: string, productDetails: any) {
         <p>New product alert: <strong>${productName}</strong></p>
         <p><strong>Price: ${productPrice} ${currency}</strong></p>
         <p>Check it out on our website!</p>
-        <p>Best regards,<br />The DashNGShop Team</p>
+        <p>Best regards,<br />The Dash Team</p>
       </td>
     `;
 
 		let mailOptions = {
-			from: `DashNGShop`,
+			from: `Dash`,
 			to: userEmail,
 			subject: `New Product: ${productName}`,
 			html: emailTemplate(bodyContent),
@@ -200,7 +200,7 @@ export async function lowProductAlert(productDetails: any) {
     `;
 
 		let mailOptions = {
-			from: `DashNGShop System`,
+			from: `Dash System`,
 			to: "beyndtech@gmail.com",
 			subject: `Low Stock: ${productName}`,
 			html: emailTemplate(bodyContent),
@@ -225,7 +225,7 @@ export async function adminTransactionAlert(userEmail: string, amount: number, c
     `;
 
 		let mailOptions = {
-			from: `DashNGShop`,
+			from: `Dash`,
 			to: "beyndtech@gmail.com",
 			subject: "Transaction Approval Required",
 			html: emailTemplate(bodyContent),
@@ -251,12 +251,12 @@ export async function transactionStatusMail(
       <p>Dear Customer,</p>
       <p>Your <strong>${type.toLowerCase()}</strong> request for <strong>${amount} ${currency}</strong> has been <strong>${status.toLowerCase()}</strong>.</p>
       <p>If you didn't authorize this request, please contact our support team immediately.</p>
-      <p>Best regards,<br />The DashNGShop Team</p>
+      <p>Best regards,<br />The Dash Team</p>
     </td>
   `;
 
 		let mailOptions = {
-			from: `DashNGShop`,
+			from: `Dash`,
 			to: userEmail,
 			subject: `${type} ${status}`,
 			html: emailTemplate(bodyContent),
@@ -274,7 +274,7 @@ export async function adminMail(recipients: string | string[], subject: string, 
 		const recipientList = Array.isArray(recipients) ? recipients : [recipients];
 
 		let mailOptions = {
-			from: `DashNGShop Admin`,
+			from: `Dash Admin`,
 			to: recipientList.join(","),
 			subject,
 			html: emailTemplate(bodyContent),
@@ -306,14 +306,14 @@ export async function loginAlertMail(userEmail: string, ipAddress?: string) {
 		ipAddress ? ` from IP address <strong>${ipAddress}</strong>` : ""
 	}.</p>
       <p>If this wasn't you, please change your password immediately and contact support.</p>
-      <p>Best regards,<br />The DashNGShop Team</p>
+      <p>Best regards,<br />The Dash Team</p>
     </td>
   `;
 
 		const mailOptions = {
-			from: `DashNGShop`,
+			from: `Dash`,
 			to: userEmail,
-			subject: `Login Alert - DashNGShop`,
+			subject: `Login Alert - Dash`,
 			html: emailTemplate(bodyContent),
 		};
 

@@ -3,6 +3,7 @@ import { AppError } from "../utils/AppError";
 import { asyncHandler } from "../utils/asyncHandler";
 import User from "../models/User";
 import Product from "../models/Product";
+import { LoginHistory } from "@/models/LoginHistory";
 
 // @desc    Get current logged in user
 // @route   GET /api/auth/me
@@ -306,9 +307,9 @@ export const syncWishlist = asyncHandler(async (req: Request, res: Response) => 
 	const user = await User.findById(userId);
 	if (!user) {
 		throw new AppError("User not found", 404);
-  }
-  
-  console.log(ids)
+	}
+
+	console.log(ids);
 
 	const validProductIds = [];
 	const invalidProductIds = [];
@@ -652,5 +653,74 @@ export const searchUsers = asyncHandler(async (req: Request, res: Response) => {
 		success: true,
 		count: users.length,
 		users,
+	});
+});
+
+// @desc    Get login history
+// @route   GET /api/admin/login-history
+// @access  Private/Admin
+export const getLoginHistory = asyncHandler(async (req: Request, res: Response) => {
+	const { limit = 500, dateRange = "week", status, search } = req.query;
+
+	// Build date filter based on dateRange
+	const now = new Date();
+	let startDate: Date;
+
+	switch (dateRange) {
+		case "day":
+			startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+			break;
+		case "week":
+			startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+			break;
+		case "month":
+			startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+			break;
+		case "quarter":
+			startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+			break;
+		default:
+			startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+	}
+
+	// Build query filters
+	let query: any = {
+		timestamp: { $gte: startDate },
+	};
+
+	// Filter by success status
+	if (status === "success") {
+		query.success = true;
+	} else if (status === "failed") {
+		query.success = false;
+	}
+
+	// Search functionality
+	if (search) {
+		// Search for users by name or email
+		const searchRegex = new RegExp(search as string, "i");
+		const users = await User.find({
+			$or: [{ firstName: searchRegex }, { lastName: searchRegex }, { email: searchRegex }],
+		}).select("_id");
+
+		const userIds = users.map((user) => user._id);
+
+		// Also search by IP address
+		query.$or = [{ userId: { $in: userIds } }, { ipAddress: { $regex: searchRegex } }];
+	}
+
+	// Fetch login history with user details
+	const loginHistory = await LoginHistory.find(query)
+		.populate({
+			path: "userId",
+			select: "firstName lastName email role",
+		})
+		.sort({ timestamp: -1 })
+		.limit(parseInt(limit as string, 10));
+
+	res.status(200).json({
+		success: true,
+		count: loginHistory.length,
+		loginHistory,
 	});
 });

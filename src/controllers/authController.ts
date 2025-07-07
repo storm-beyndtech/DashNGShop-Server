@@ -1,58 +1,12 @@
 import { Request, Response } from "express";
-import * as jwt from "jsonwebtoken";
-import User, { IUser } from "../models/User";
+import User from "../models/User";
 import { asyncHandler } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
 import { loginAlertMail, welcomeMail } from "@/services/emailService";
 import { LoginHistory } from "@/models/LoginHistory";
+import { getRealClientIp } from "@/utils/GetIp";
+import { sendTokenResponse } from "@/utils/JWTHelper";
 
-// Helper function to generate JWT token
-const generateToken = (userId: string) => {
-	if (!process.env.JWT_SECRET) {
-		throw new Error("JWT_SECRET is not defined in environment variables");
-	}
-
-	return jwt.sign({ userId }, process.env.JWT_SECRET as string, {
-		expiresIn: "7d",
-	});
-};
-
-// Send token response
-const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
-	const token = generateToken(user._id.toString());
-
-	const options = {
-		expires: new Date(
-			Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
-		),
-		httpOnly: true,
-		secure: process.env.NODE_ENV === "production",
-		sameSite: "strict" as const,
-	};
-
-	res
-		.status(statusCode)
-		.cookie("token", token, options)
-		.json({
-			success: true,
-			token,
-			user: {
-			id: user._id,
-			firstName: user.firstName,
-			lastName: user.lastName,
-			username: user.username,
-			email: user.email,
-			role: user.role,
-			avatar: user.avatar,
-			phone: user.phone,
-			addresses: user.addresses,
-			preferences: user.preferences,
-			wishlist: user.wishlist,
-			lastLogin: user.lastLogin,
-			createdAt: user.createdAt,
-			},
-		});
-};
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -87,7 +41,8 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 // @route   POST /api/auth/login
 // @access  Public
 export const login = asyncHandler(async (req: Request, res: Response) => {
-	const { email, password } = req.body;
+  const { email, password } = req.body;
+  const ip = getRealClientIp(req);
 
 	// Validate input
 	if (!email || !password) {
@@ -111,7 +66,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   
   const loginEntry = new LoginHistory({
     userId: user?._id,
-    ipAddress: req.ip || req.headers['x-forwarded-for'],
+    ipAddress: ip,
     userAgent: req.headers['user-agent'],
     success: isMatch,
   });
@@ -125,7 +80,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 	// Update last login
 	user.lastLogin = new Date();
   await user.save();
-  await loginAlertMail(user.email, req.ip || req.headers['x-forwarded-for'] as string);
+  await loginAlertMail(user.email, ip);
 
 	sendTokenResponse(user, 200, res);
 });

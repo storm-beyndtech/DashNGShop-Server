@@ -17,7 +17,7 @@ export function emailTemplate(bodyContent: string) {
             <!-- Footer -->
             <tr>
               <td align="center" style="padding: 20px; background: #13160F; color: #fafafa; font-size: 12px;">
-                © 2025 DashNGShop | All Rights Reserved
+                © 2025 Dash | All Rights Reserved
               </td>
             </tr>
           </table>

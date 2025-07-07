@@ -1,17 +1,25 @@
-// routes/users.ts
-import express from 'express'
-import { protect, restrictTo } from '../middleware/auth'
-import { deleteUserById, getAllUsers, getUserById, updateUserById } from '../controllers/userController'
+import express from "express";
+import { protect, restrictTo } from "../middleware/auth";
+import {
+	deleteUserById,
+	getAllUsers,
+	getLoginHistory,
+	getUserById,
+	updateUserById,
+} from "../controllers/userController";
 
-const router = express.Router()
+const router = express.Router();
 
 // All routes are protected and admin-only
-router.use(protect)
-router.use(restrictTo('admin'))
+router.use(protect);
 
-router.get('/', getAllUsers)
-router.get('/:id', getUserById)
-router.put('/:id', updateUserById)
-router.delete('/:id', deleteUserById)
+router.get("/login-history", getLoginHistory);
 
-export default router
+router.use(restrictTo("admin"));
+
+router.get("/", getAllUsers);
+router.get("/:id", getUserById);
+router.put("/:id", updateUserById);
+router.delete("/:id", deleteUserById);
+
+export default router;
