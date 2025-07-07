@@ -38,7 +38,7 @@ export async function welcomeMail(userEmail: string) {
     `;
 
 		let mailOptions = {
-			from: `Dash`,
+			from: `Dash <${process.env.SMTP_USER}>`,
 			to: userEmail,
 			subject: "Welcome to Dash!",
 			html: emailTemplate(bodyContent),
@@ -64,7 +64,7 @@ export async function passwordResetMail(userEmail: string, resetToken: string) {
     `;
 
 		let mailOptions = {
-			from: `Dash`,
+			from: `Dash <${process.env.SMTP_USER}>`,
 			to: userEmail,
 			subject: "Password Reset Request",
 			html: emailTemplate(bodyContent),
@@ -90,7 +90,7 @@ export async function verificationCodeMail(userEmail: string, verificationCode: 
     `;
 
 		let mailOptions = {
-			from: `Dash`,
+			from: `Dash <${process.env.SMTP_USER}>`,
 			to: userEmail,
 			subject: "Your Dash Verification Code",
 			html: emailTemplate(bodyContent),
@@ -118,7 +118,7 @@ export async function orderPlacedMail(userEmail: string, orderDetails: any) {
     `;
 
 		let mailOptions = {
-			from: `Dash`,
+			from: `Dash <${process.env.SMTP_USER}>`,
 			to: userEmail,
 			subject: `Order Confirmed - #${orderId}`,
 			html: emailTemplate(bodyContent),
@@ -145,7 +145,7 @@ export async function orderConfirmationMail(userEmail: string, orderDetails: any
     `;
 
 		let mailOptions = {
-			from: `Dash`,
+			from: `Dash <${process.env.SMTP_USER}>`,
 			to: userEmail,
 			subject: `Payment Confirmed - Order ID: ${orderId}`,
 			html: emailTemplate(bodyContent),
@@ -172,7 +172,7 @@ export async function newProductMail(userEmail: string, productDetails: any) {
     `;
 
 		let mailOptions = {
-			from: `Dash`,
+			from: `Dash <${process.env.SMTP_USER}>`,
 			to: userEmail,
 			subject: `New Product: ${productName}`,
 			html: emailTemplate(bodyContent),
@@ -200,7 +200,7 @@ export async function lowProductAlert(productDetails: any) {
     `;
 
 		let mailOptions = {
-			from: `Dash System`,
+			from: `Dash <${process.env.SMTP_USER}>`,
 			to: "beyndtech@gmail.com",
 			subject: `Low Stock: ${productName}`,
 			html: emailTemplate(bodyContent),
@@ -225,7 +225,7 @@ export async function adminTransactionAlert(userEmail: string, amount: number, c
     `;
 
 		let mailOptions = {
-			from: `Dash`,
+			from: `Dash <${process.env.SMTP_USER}>`,
 			to: "beyndtech@gmail.com",
 			subject: "Transaction Approval Required",
 			html: emailTemplate(bodyContent),
@@ -256,7 +256,7 @@ export async function transactionStatusMail(
   `;
 
 		let mailOptions = {
-			from: `Dash`,
+			from: `Dash <${process.env.SMTP_USER}>`,
 			to: userEmail,
 			subject: `${type} ${status}`,
 			html: emailTemplate(bodyContent),
@@ -274,7 +274,7 @@ export async function adminMail(recipients: string | string[], subject: string, 
 		const recipientList = Array.isArray(recipients) ? recipients : [recipients];
 
 		let mailOptions = {
-			from: `Dash Admin`,
+			from: `Dash Admin <${process.env.SMTP_USER}>`,
 			to: recipientList.join(","),
 			subject,
 			html: emailTemplate(bodyContent),
@@ -311,14 +311,14 @@ export async function loginAlertMail(userEmail: string, ipAddress?: string) {
   `;
 
 		const mailOptions = {
-			from: `Dash`,
+			from: `Dash <${process.env.SMTP_USER}>`,
 			to: userEmail,
 			subject: `Login Alert - Dash`,
 			html: emailTemplate(bodyContent),
 		};
 
 		return await sendMailWithRetry(mailOptions);
-	} catch (error) {
+  } catch (error) {
 		return { error: error instanceof Error && error.message };
 	}
 }
